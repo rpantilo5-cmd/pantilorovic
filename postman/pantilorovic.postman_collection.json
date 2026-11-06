@@ -1,0 +1,177 @@
+{
+  "info": {
+    "name": "Module 5 - Laravel API",
+    "description": "Eight Postman checks for the pantilorovic Laravel 13 Sanctum API. Login saves the token to the collection variable.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8011" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Public API",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "auth": { "type": "noauth" },
+        "url": "{{base_url}}/api/hello"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": ["pm.test('Returns 200', function () { pm.response.to.have.status(200); });"]
+        }
+      }]
+    },
+    {
+      "name": "2. Register",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "auth": { "type": "noauth" },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Juan Dela Cruz\",\n  \"email\": \"juan@example.com\",\n  \"password\": \"Student@12345\",\n  \"password_confirmation\": \"Student@12345\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{base_url}}/api/register"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": ["pm.test('Returns 201', function () { pm.response.to.have.status(201); });"]
+        }
+      }]
+    },
+    {
+      "name": "3. Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "auth": { "type": "noauth" },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"juan@example.com\",\n  \"password\": \"Student@12345\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{base_url}}/api/login"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Returns 200', function () { pm.response.to.have.status(200); });",
+            "if (pm.response.code === 200) { pm.collectionVariables.set('token', pm.response.json().access_token); }"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "4. Profile without token",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "auth": { "type": "noauth" },
+        "url": "{{base_url}}/api/profile"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": ["pm.test('Returns 401', function () { pm.response.to.have.status(401); });"]
+        }
+      }]
+    },
+    {
+      "name": "5. Profile with token",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+        },
+        "url": "{{base_url}}/api/profile"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": ["pm.test('Returns 200', function () { pm.response.to.have.status(200); });"]
+        }
+      }]
+    },
+    {
+      "name": "6. Login with incorrect password",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "auth": { "type": "noauth" },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"juan@example.com\",\n  \"password\": \"wrong-password\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{base_url}}/api/login"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": ["pm.test('Returns 422', function () { pm.response.to.have.status(422); });"]
+        }
+      }]
+    },
+    {
+      "name": "7. Logout",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+        },
+        "url": "{{base_url}}/api/logout"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": ["pm.test('Returns 200', function () { pm.response.to.have.status(200); });"]
+        }
+      }]
+    },
+    {
+      "name": "8. Profile with revoked token",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+        },
+        "url": "{{base_url}}/api/profile"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": ["pm.test('Returns 401', function () { pm.response.to.have.status(401); });"]
+        }
+      }]
+    }
+  ]
+}
